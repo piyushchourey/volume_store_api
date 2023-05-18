@@ -31,6 +31,8 @@ db.broker = require("./brokers.model.js")(sequelize, Sequelize);
 db.state = require("./state.model.js")(sequelize, Sequelize);
 db.city = require("./city.model.js")(sequelize, Sequelize);
 
+db.product = require("./product.model.js")(sequelize, Sequelize);
+
 /*Login - user meta relationship */
 db.login.hasOne(db.LoginMeta);
 db.LoginMeta.belongsTo(db.login);
@@ -39,14 +41,14 @@ db.LoginMeta.belongsTo(db.login);
 /*Township - blocks relationship */
 db.townships.hasMany(db.blocks);
 db.blocks.belongsTo(db.townships);
-db.townships.belongsTo(db.state,{
-  foreignKey : 'stateId',
-  targetKey : 'id'
-});
-db.townships.belongsTo(db.city,{
-  foreignKey : 'cityId',
-  targetKey : 'id'
-}); 
+// db.townships.belongsTo(db.state,{
+//   foreignKey : 'stateId',
+//   targetKey : 'id'
+// });
+// db.townships.belongsTo(db.city,{
+//   foreignKey : 'cityId',
+//   targetKey : 'id'
+// }); 
 
 /*Block - plots relationship */
 db.blocks.hasMany(db.plots);
