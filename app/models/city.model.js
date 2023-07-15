@@ -3,7 +3,7 @@ module.exports = (sequelize, Sequelize) => {
       name: {
         type: Sequelize.STRING
       },
-      stateId: {
+      state_id: {
         type: Sequelize.INTEGER
       }
     });

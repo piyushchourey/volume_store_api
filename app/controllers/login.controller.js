@@ -38,49 +38,57 @@ const doRegister = (req, res) =>{
 };
 
 const dologin = (req, res) => {
-	console.log(bcrypt.hashSync(req.body.password, 8));
     // Validate request
-    Login.findOne({ where: { email: req.body.email } })
-      .then(data => {
-      	if(_.size(data) > 0){
-      		//check password is correct or not..
-      		var passwordIsValid = bcrypt.compareSync(
-		        req.body.password,
-		        data.password
-	      	);
-      		//if password is not correct..
-      		if (!passwordIsValid) {
-		        return res.status(401).send({
-				  status :0,
-		          accessToken: null,
-		          message: "Invalid Password!"
-		        });
-	      	}
+	try{    
+		Login.findOne({ where: { email: req.body.email } })
+			.then(data => {
+				if(_.size(data) > 0){
+					//check password is correct or not..
+					var passwordIsValid = bcrypt.compareSync(
+					req.body.password,
+					data.password
+					);
+					//if password is not correct..
+					if (!passwordIsValid) {
+					return res.status(401).send({
+						status :0,
+						accessToken: null,
+						message: "Invalid Password!"
+					});
+					}
 
-      		var token = jwt.sign({ id: data.id }, config.secret, {
-		        expiresIn: 86400 // 24 hours
-		    });
-		    res.send({
-	          id: data.id,
-	          email: data.email,
-	          createdAt: data.createdAt,
-	          updatedAt: data.updatedAt,
-	          role: data.role,
-	          accessToken: token
-	        });
-      	}else{
-      		res.send({ status:0, data:[], message: 'User does not exist.' });
-      	}
-        
-      })
-      .catch(err => {
-        res.status(500).send({
-		  status :0,
-		  data : [],
-          message:
-            err.message || "Some error occurred while retrieving tutorials."
-        });
-      });
+					var token = jwt.sign({ id: data.id }, config.secret, {
+					expiresIn: 86400 // 24 hours
+				});
+				res.send({
+					id: data.id,
+					email: data.email,
+					createdAt: data.createdAt,
+					updatedAt: data.updatedAt,
+					role: data.role,
+					accessToken: token
+				});
+				}else{
+					res.send({ status:0, data:[], message: 'User does not exist.' });
+				}
+			})
+	.catch(err => {
+	  res.status(500).send({
+		status :0,
+		data : [],
+		message:
+		  err.message || "Some error occurred while retrieving tutorials."
+	  });
+	});
+	}catch(err){
+		res.status(500).send({
+			status :0,
+			data : [],
+			message:
+			  err.message || "Some error occurred while retrieving tutorials."
+		  });
+	}
+
 };
 
 module.exports = {

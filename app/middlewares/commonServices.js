@@ -117,12 +117,20 @@ var upload = multer({
 
 const singleFileUpload = upload.single("importFiles")
 
+var trimmer = function(req, res, next){
+  req.body = _.object(_.map(req.body, function (value, key) {
+    console.log(value);
+    return [key, value.trim()];
+  }));
+  next();
+}
 
 const commonServices = {
   checkDuplicateTownship: checkDuplicateTownship,
   checkDuplicatePlotWithTownship : checkDuplicatePlotWithTownship,
   plotVerify : plotVerify,
   upload:upload,
-  singleFileUpload:singleFileUpload
+  singleFileUpload:singleFileUpload,
+  trimmer:trimmer
 };
 module.exports = commonServices; 

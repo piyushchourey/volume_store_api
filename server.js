@@ -42,6 +42,11 @@ app.use('/api/booking', require("./app/routes/booking.routes"));
 app.use('/api/broker', require("./app/routes/brokers.routes"));
 app.use('/api/report', require("./app/routes/report.routes"));
 
+app.use('/api/product', require("./app/routes/product.route"));
+app.use('/api/brand', require("./app/routes/brand.routes"));
+app.use('/api/client', require("./app/routes/client.route"));
+app.use('/api/ratecalculation', require("./app/routes/rateCalculations.route"));
+
 app.use("/images", express.static(path.join(__dirname, 'images')));
 app.use("/excel", express.static(path.join(__dirname, 'excel')));
 
