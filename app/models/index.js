@@ -45,6 +45,8 @@ db.product.belongsTo(db.brand,{
   targetKey : 'id'
 });
 
+db.product = require("./product.model.js")(sequelize, Sequelize);
+
 /*Login - user meta relationship */
 // db.login.hasOne(db.LoginMeta);
 // db.LoginMeta.belongsTo(db.login);
