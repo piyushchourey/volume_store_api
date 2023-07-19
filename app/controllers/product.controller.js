@@ -1,5 +1,6 @@
 const db = require("../models/index");
 const Product = db.product;
+const Brand = db.brand;
 const Op = db.Sequelize.Op;
 var _ = require('lodash');
 const fs = require('fs');
