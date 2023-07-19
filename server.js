@@ -21,9 +21,9 @@ app.use(express.json({limit: '100mb'}));
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true,limit: '100mb' }));
 // app.use(fileupload());
-db.sequelize.sync({ force: true }).then(() => {
-    console.log("Drop and re-sync db.");
-});
+// db.sequelize.sync({ force: true }).then(() => {
+//     console.log("Drop and re-sync db.");
+// });
 
 
 
