@@ -21,13 +21,16 @@ db.sequelize = sequelize;
 
 
 // db.category = require("./category.model.js")(sequelize, Sequelize);
+
 db.login = require("./login.model.js")(sequelize, Sequelize);
+
 // db.LoginMeta = require("./login_meta.model.js")(sequelize, Sequelize);
 // db.townships = require("./townships.model.js")(sequelize, Sequelize);
 // db.plots = require("./plots.model.js")(sequelize, Sequelize);
 // db.blocks = require("./blocks.model.js")(sequelize, Sequelize);
 // db.booking = require("./booking.model.js")(sequelize, Sequelize);
 // db.broker = require("./brokers.model.js")(sequelize, Sequelize);
+
 db.state = require("./state.model.js")(sequelize, Sequelize);
 db.city = require("./city.model.js")(sequelize, Sequelize);
 db.product = require("./product.model.js")(sequelize, Sequelize);
@@ -37,15 +40,16 @@ db.measurementunit = require("./units.model.js")(sequelize, Sequelize);
 db.ratecalculations = require("./rateCalculations.js")(sequelize, Sequelize); 
 
 /*Product - Brand relationship */
-// db.product.hasOne(db.brand);
-// db.brand.belongsTo(db.product);
+// db.brand.hasMany(db.product);
+// db.product.belongsTo(db.brand);
 
-db.product.belongsTo(db.brand,{
-  foreignKey : 'brandId',
-  targetKey : 'id'
-});
+// Define the association
+db.product.belongsTo(db.brand, { foreignKey: 'brandId' });
 
-db.product = require("./product.model.js")(sequelize, Sequelize);
+// db.product.belongsTo(db.brand,{
+//   foreignKey : 'brandId',
+//   targetKey : 'id'
+// });
 
 /*Login - user meta relationship */
 // db.login.hasOne(db.LoginMeta);
@@ -75,7 +79,7 @@ db.product = require("./product.model.js")(sequelize, Sequelize);
 // db.booking.belongsTo(db.broker);
 
 // /*State - city relationship */
-// db.state.hasMany(db.city);
-// db.city.belongsTo(db.state);
+db.state.hasMany(db.city);
+db.city.belongsTo(db.state);
 
 module.exports = db;

@@ -19,7 +19,7 @@ const add = async (req, res) => {
 			var RA_PostData = {
                 client_id : req.body.clientName,
                 totalPrice : req.body.totalPrice,
-                isRARequired : true,
+                isRARequired : req.body.isRARequired,
                 productArr: req.body.productsArr
             };
 			if(_.trim(RA_PostData.client_id)==""){
@@ -27,25 +27,31 @@ const add = async (req, res) => {
 			}
 			console.log(RA_PostData);
 			RateCalculation.create(RA_PostData).then(async data => {
-				RA_PostData.productArr.forEach(async object => {
-					let extraValue = JSON.parse(process.env.RATE_CALC_RATE_EXTRA);
-					var addextra = []; 
-					// let productDesc = await Product.findAll({ where: { id: object.product }, attributes: ['description']})
-					// console.log(productDesc[0].description);
-					// let description = productDesc[0].description;
-					let cartage = +(object.total_price * extraValue.cartage).toFixed(2);
-					let totalOfProduct  = +(+object.total_price + +cartage).toFixed(2);
-					let installationCharge = +(+totalOfProduct * (+extraValue.installation)).toFixed(2); 
-					let totalWithInstallation = +(+totalOfProduct + +installationCharge).toFixed(2);
-					let profit =  +(+totalWithInstallation * +extraValue.overheadprofit).toFixed(2);
-					let lwc = +(+profit * +extraValue.lwc).toFixed(2);
-					let costpereach = (+totalWithInstallation + +profit +  +lwc).toFixed(2)
-					addextra.push({cartage:cartage,totalOfProduct:totalOfProduct,installationCharge:installationCharge,totalWithInstallation:totalWithInstallation,profit:profit,lwc:lwc,costpereach:costpereach});
-					object['otherCharges'] = addextra;
-					object['finalCostEach'] = costpereach;
-					// object['description'] = description;
-					object.isExpand = false;
-				});
+					RA_PostData.productArr.forEach(async object => {
+						object['description'] = removeTags(object.description);
+						if(RA_PostData.isRARequired > 0){
+							let extraValue = JSON.parse(process.env.RATE_CALC_RATE_EXTRA);
+							var addextra = []; 
+							// let productDesc = await Product.findAll({ where: { id: object.product }, attributes: ['description']})
+							// console.log(productDesc[0].description);
+							// let description = productDesc[0].description;
+							let cartage = +(object.total_price * extraValue.cartage).toFixed(2);
+							let totalOfProduct  = +(+object.total_price + +cartage).toFixed(2);
+							let installationCharge = +(+totalOfProduct * (+extraValue.installation)).toFixed(2); 
+							let totalWithInstallation = +(+totalOfProduct + +installationCharge).toFixed(2);
+							let profit =  +(+totalWithInstallation * +extraValue.overheadprofit).toFixed(2);
+							let lwc = +(+profit * +extraValue.lwc).toFixed(2);
+							let costpereach = (+totalWithInstallation + +profit +  +lwc).toFixed(2)
+							addextra.push({cartage:cartage,totalOfProduct:totalOfProduct,installationCharge:installationCharge,totalWithInstallation:totalWithInstallation,profit:profit,lwc:lwc,costpereach:costpereach});
+							object['otherCharges'] = addextra;
+							object['finalCostEach'] = costpereach;
+							// object['description'] = description;
+							object.isExpand = false;
+						}
+						else{
+							object['finalCostEach'] = 0;
+						}
+					});
 				RA_PostData['last_insert_id'] = data.id;
                 res.send({ status:true, data:RA_PostData, message: "RA was added successfully!" });
 			}).catch(err => {
@@ -64,8 +70,9 @@ const genrateExcel = async(req,res) =>{
 	await RateCalculation.update({RAData:updatedData},{
 		where : { id : req.body.last_insert_id } 
 	}).then(data => {
-		
-	// Require library
+	
+	if(req.body.isRARequired > 0){
+			// Require library
 	var excel = require('excel4node');
 
 	// Create a new instance of a Workbook class
@@ -221,13 +228,65 @@ const genrateExcel = async(req,res) =>{
 		worksheet2.cell(j+1, 6).formula(`E${j+1} * C${j+1}`).style(style);
 		totalPrice+= +array.finalCostEach * +array.qty;
 	});
-	worksheet2.cell((updatedData.length)+2, 5).string("Total Amount").style(headerStyle);
-	worksheet2.cell((updatedData.length)+2, 6).number(totalPrice).style({font: {color: '#FFFFFF',size: 12,bold: true},fill: {type: 'pattern',patternType: 'solid',fgColor: '#4472C4'},numberFormat: '₹ #,##0.00;₹ -#,##0.00'});
+		worksheet2.cell((updatedData.length)+2, 5).string("Total Amount").style(headerStyle);
+		worksheet2.cell((updatedData.length)+2, 6).number(totalPrice).style({font: {color: '#FFFFFF',size: 12,bold: true},fill: {type: 'pattern',patternType: 'solid',fgColor: '#4472C4'},numberFormat: '₹ #,##0.00;₹ -#,##0.00'});
 
-	let exportFileName = `excel/RA/`+Date.now()+`.xlsx`;
-	workbook.write(exportFileName);
-res.status(200).send({status:true,msg:"Excel file genrated", path:process.env.API_URL+exportFileName});
+		let exportFileName = `excel/RA/`+Date.now()+`.xlsx`;
+		workbook.write(exportFileName);
+		res.status(200).send({status:true,msg:"Excel file genrated", path:process.env.API_URL+exportFileName});
+	}else{
+		// Require library
+		var excel = require('excel4node');
+		// Create a new instance of a Workbook class
+		var workbook = new excel.Workbook();
+		var worksheet2 = workbook.addWorksheet('Schedule');
+		var headerStyle = workbook.createStyle({
+			font: { color: '#FFFFFF', size: 12, bold: true },
+			fill: { type: 'pattern', patternType: 'solid', fgColor: '#4472C4' }
+		});
+		var productDescStyle = workbook.createStyle({
+			font: { color: '#000000', size: 12 },
+			alignment: { wrapText: true },
+			numberFormat: '₹ #,##0.00;₹ -#,##0.00'
+		});
+		// Create a reusable style
+		var style = workbook.createStyle({
+			font: { color: '#000000', size: 12 },
+			numberFormat: '₹ #,##0.00;₹ -#,##0.00'
+		});
+		var normalStyle = workbook.createStyle({
+			font: { color: '#000000', size: 12 }
+		});
+		//Worksheet 2 Header row
+		worksheet2.column(2).setWidth(50);
+		worksheet2.column(3).setWidth(30);
+		worksheet2.column(5).setWidth(25);
 
+		worksheet2.cell(1, 1).string("S.N").style(headerStyle);
+		worksheet2.cell(1, 2).string("Description of Item").style(headerStyle);
+		worksheet2.cell(1, 3).string("Qty").style(headerStyle);
+		worksheet2.cell(1, 4).string("Unit").style(headerStyle);
+		worksheet2.cell(1, 5).string("Rate").style(headerStyle);
+		worksheet2.cell(1, 6).string("Amount").style(headerStyle);
+		var totalPrice =0;
+		updatedData.forEach((array, i) => {
+			let j = i+1;
+			//Prepare Sheet2 string
+			worksheet2.cell(j+1, 1).number(j).style(normalStyle);
+			worksheet2.cell(j+1, 2).string(array.description).style(productDescStyle);
+			worksheet2.cell(j+1, 3).number(+array.qty).style(normalStyle);
+			worksheet2.cell(j+1, 4).string(array.uom).style(style);
+			worksheet2.cell(j+1, 5).number(+array.total_price).style(style);
+			worksheet2.cell(j+1, 6).formula(`E${j+1} * C${j+1}`).style(style);
+			totalPrice+= +array.total_price * +array.qty;
+		});
+		worksheet2.cell((updatedData.length)+2, 5).string("Total Amount").style(headerStyle);
+		worksheet2.cell((updatedData.length)+2, 6).number(totalPrice).style({font: {color: '#FFFFFF',size: 12,bold: true},fill: {type: 'pattern',patternType: 'solid',fgColor: '#4472C4'},numberFormat: '₹ #,##0.00;₹ -#,##0.00'});
+
+		let exportFileName = `excel/RA/`+Date.now()+`.xlsx`;
+		workbook.write(exportFileName);
+		res.status(200).send({status:true,msg:"Excel file genrated", path:process.env.API_URL+exportFileName});
+	}
 }).catch(err => { 
 	res.status(500).send({ status :0, data :[], message: err.message || "Some error occurred while retrieving tutorials." }); 
 });

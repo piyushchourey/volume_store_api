@@ -32,7 +32,6 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to bezkoder application." });
 });
 
-app.use('/api/product', require("./app/routes/product.routes"));
 
 app.use('/api/login', require("./app/routes/login.routes"));
 app.use('/api/admin', require("./app/routes/register.routes"));
@@ -44,7 +43,7 @@ app.use('/api/admin', require("./app/routes/register.routes"));
 // app.use('/api/broker', require("./app/routes/brokers.routes"));
 // app.use('/api/report', require("./app/routes/report.routes"));
 
-app.use('/api/product', require("./app/routes/product.route"));
+app.use('/api/product', require("./app/routes/product.route")); 
 app.use('/api/brand', require("./app/routes/brand.routes"));
 app.use('/api/client', require("./app/routes/client.route"));
 app.use('/api/ratecalculation', require("./app/routes/rateCalculations.route"));
