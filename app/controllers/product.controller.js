@@ -46,13 +46,13 @@ const singleFileUpload = upload.single("importFile")
 
 
 // Create and Save a new product
-const create = async (req, res) => {
+const create = async (req, res,next) => {
     // Validate request
 	try{
 		if(!(_.isEmpty(req.body))){
 			var productPostData = req.body;
-			var ImageFileName = await uploadImage(req.body);
-			var PdfFileName = await uploadPdf(req.body);
+			var ImageFileName = await uploadImage(req.body,next);
+			var PdfFileName = await uploadPdf(req.body,next);
 			productPostData['documents']= ImageFileName; 
 			productPostData['pdfFile']= PdfFileName; 
 			Product.create(productPostData).then(township => {
@@ -69,7 +69,7 @@ const create = async (req, res) => {
 };
 
 /* This function is used to upload image.. */
-const uploadImage = async (req, res, next) => {
+const uploadImage = async (req, next) => {
 	// to declare some path to store your converted image
 	var matches = req.documents.match(/^data:([A-Za-z-+/]+);base64,(.+)$/),
 	response = {};
@@ -90,11 +90,11 @@ const uploadImage = async (req, res, next) => {
 		fs.writeFileSync("./images/" + fileName, imageBuffer, 'utf8');
 		return fileName;
 	} catch (e) {
-		next(e); 
+		throw(e); 
 	}
 }
 
-const uploadPdf = async (req, res, next) => {
+const uploadPdf = async (req, next) => {
 	// to declare some path to store your converted image
 	var matches = req.pdfFile.match(/^data:([A-Za-z-+/]+);base64,(.+)$/),
 	response = {};
@@ -115,7 +115,7 @@ const uploadPdf = async (req, res, next) => {
 		fs.writeFileSync("./pdf/" + fileName, imageBuffer, 'utf8');
 		return fileName;
 	} catch (e) {
-		next(e); 
+		throw(e); 
 	}
 }
 

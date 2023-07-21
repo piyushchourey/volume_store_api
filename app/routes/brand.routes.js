@@ -3,7 +3,7 @@ const { authJwt, commonServices } = require("../middlewares");
 
 var router = require("express").Router();
 
-router.post("/add", [ authJwt.verifyToken ], brand.create);
+router.post("/add", [ authJwt.verifyToken, commonServices.checkDuplicateBrand  ], brand.create);
 
 router.get("/getAll", [ authJwt.verifyToken ], brand.getAll);
 

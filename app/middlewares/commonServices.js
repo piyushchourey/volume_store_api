@@ -1,5 +1,6 @@
 const db = require("../models");
 const Townships = db.townships;
+const Brand = db.brand;
 const Plots = db.plots;
 var _ = require('lodash');
 var multer  = require('multer');
@@ -18,6 +19,26 @@ checkDuplicateTownship = (req, res, next) => {
         status :0,
         data:[],
         message: "Failed! Township name is already in use with mention state and city!"
+      });
+      return;
+    }else{
+      next();
+    }
+  });
+};
+
+checkDuplicateBrand = (req, res, next) => {
+  // Email
+  Brand.findOne({
+    where: {
+      name: req.body.name,
+    }
+  }).then(brand => {
+    if (brand) {
+      res.status(400).send({
+        status :0,
+        data:[],
+        message: "Failed! Brand name is already exist."
       });
       return;
     }else{
@@ -127,6 +148,7 @@ var trimmer = function(req, res, next){
 
 const commonServices = {
   checkDuplicateTownship: checkDuplicateTownship,
+  checkDuplicateBrand:checkDuplicateBrand,
   checkDuplicatePlotWithTownship : checkDuplicatePlotWithTownship,
   plotVerify : plotVerify,
   upload:upload,

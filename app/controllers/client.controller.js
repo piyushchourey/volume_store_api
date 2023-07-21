@@ -184,7 +184,7 @@ const getStates = async ( req, res ) =>{
 
 const getCities = async ( req, res ) =>{ 
 	let paramObj = {};
-	paramObj.where = { state_id: req.params.stateId};
+	paramObj.where = { stateId: req.params.stateId};
 	try {
 		let citiesData = await City.findAll(paramObj)
 		res.status(200).send({ status:true, data:citiesData, message: '' });
