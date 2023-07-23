@@ -50,7 +50,7 @@ const dologin = (req, res) => {
 					);
 					//if password is not correct..
 					if (!passwordIsValid) {
-					return res.status(401).send({
+					return res.status(200).send({
 						status :0,
 						accessToken: null,
 						message: "Invalid Password!"

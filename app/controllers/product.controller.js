@@ -120,18 +120,19 @@ const uploadPdf = async (req, next) => {
 }
 
 const getAll = async (req, res, next) => {
-	console.log("bdbsbd32yy3724ebd423382")
 	try {
 	  const paramObj = req.params.id ? { where: { id: req.params.id } } : {};
 	  const productData = await Product.findAll({
 		...paramObj,
 		include: Brand, // Include associated Brand data
 	  });
-  
 	  const updatedProductData = productData.map((product) => {
 		product.documents = process.env.API_URL + 'images/' + product.documents;
+		product.modelNumber = product.brand.name+ " - "+product.modelNumber;
 		return product;
 	  });
+
+	  console.log(updatedProductData); 
   
 	  res.status(200).send({ status: true, data: updatedProductData, message: '' });
 	} catch (err) {

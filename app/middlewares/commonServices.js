@@ -1,6 +1,7 @@
 const db = require("../models");
 const Townships = db.townships;
 const Brand = db.brand;
+const Product = db.product;
 const Plots = db.plots;
 var _ = require('lodash');
 var multer  = require('multer');
@@ -35,10 +36,30 @@ checkDuplicateBrand = (req, res, next) => {
     }
   }).then(brand => {
     if (brand) {
-      res.status(400).send({
+      res.status(201).send({
         status :0,
         data:[],
         message: "Failed! Brand name is already exist."
+      });
+      return;
+    }else{
+      next();
+    }
+  });
+};
+
+checkDuplicateProduct = (req, res, next) => {
+  Product.findOne({
+    where: {
+      brandId: req.body.brandId,
+      modelNumber: req.body.modelNumber
+    }
+  }).then(product => {
+    if (product) {
+      res.status(201).send({
+        status :0,
+        data:[],
+        message: "Failed! This Prodcut is already exist with mention Model Number."
       });
       return;
     }else{
@@ -148,6 +169,7 @@ var trimmer = function(req, res, next){
 
 const commonServices = {
   checkDuplicateTownship: checkDuplicateTownship,
+  checkDuplicateProduct:checkDuplicateProduct,
   checkDuplicateBrand:checkDuplicateBrand,
   checkDuplicatePlotWithTownship : checkDuplicatePlotWithTownship,
   plotVerify : plotVerify,
