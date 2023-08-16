@@ -1,9 +1,11 @@
+const category = require("../controllers/category.controller.js");
+const { authJwt, commonServices } = require("../middlewares");
 
-  const category = require("../controllers/category.controller.js");
+var router = require("express").Router();
 
-  var router = require("express").Router();
+// Create a new Category
+router.post("/add", [ authJwt.verifyToken, commonServices.checkDuplicateCategory  ], category.create);
+router.get("/getAll", [ authJwt.verifyToken ], category.getAll);
+router.delete("/remove/:id", [ authJwt.verifyToken ], category.doRemove);
 
-  // Create a new Category
-  router.post("/", category.create);
-
-  module.exports = router;
+module.exports = router;

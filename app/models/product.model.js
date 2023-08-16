@@ -5,11 +5,11 @@ module.exports = (sequelize, Sequelize) => {
       brandId: {
         type: DataTypes.INTEGER
       },
-      category: {
-        type: DataTypes.STRING
+      categoryId: {
+        type: DataTypes.INTEGER
       },
-      subcategory:{
-        type: DataTypes.STRING
+      subcategoryId:{
+        type: DataTypes.INTEGER
       },
       modelNumber:{
         type: DataTypes.STRING
@@ -47,11 +47,32 @@ module.exports = (sequelize, Sequelize) => {
       itemRemark:{
         type: DataTypes.TEXT
       },
+      productUSP:{
+        type: DataTypes.TEXT
+      },
+      OEMcriteria:{
+        type: DataTypes.TEXT
+      },
       documents: {
+        type: DataTypes.TEXT
+      },
+      bannerImg: {
         type: DataTypes.TEXT
       },
       pdfFile:{
         type: DataTypes.TEXT
+      },
+      modelNumber_ref1:{
+        type: DataTypes.INTEGER
+      },
+      modelNumber_ref2:{
+        type: DataTypes.INTEGER
+      },
+      modelNumber_ref3:{
+        type: DataTypes.INTEGER
+      },
+      modelNumber_ref4:{
+        type: DataTypes.INTEGER
       },
       status:{
         type:DataTypes.BOOLEAN,

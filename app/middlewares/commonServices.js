@@ -1,10 +1,13 @@
 const db = require("../models");
 const Townships = db.townships;
 const Brand = db.brand;
+const Category = db.category;
+const SubCategory = db.subcategory;
 const Product = db.product;
 const Plots = db.plots;
 var _ = require('lodash');
 var multer  = require('multer');
+const Op = db.Sequelize.Op;
 
 checkDuplicateTownship = (req, res, next) => {
   // Email
@@ -28,8 +31,50 @@ checkDuplicateTownship = (req, res, next) => {
   });
 };
 
+checkDuplicateCategory = (req, res, next) => {
+  Category.findOne({
+    where: {
+      name: req.body.name,
+    }
+  }).then(category => {
+    if (category) {
+      res.status(201).send({
+        status :0,
+        data:[],
+        message: "Failed! Category name is already exist."
+      });
+      return;
+    }else{
+      next();
+    }
+  });
+};
+
+checkDuplisubcateCategory = (req, res, next) => {
+  SubCategory.findOne({
+    where: {
+      categoryId: req.body.categoryId,
+      [Op.or]: [
+        { name: _.lowerCase(req.body.name) },
+        { name: _.upperCase(req.body.name) }
+      ]
+    }
+  }).then(subcategory => {
+    if (subcategory) {
+      res.status(201).send({
+        status :0,
+        data:[],
+        message: "Failed! Sub Category name is already exist."
+      });
+      return;
+    }else{
+      next();
+    }
+  });
+};
+
 checkDuplicateBrand = (req, res, next) => {
-  // Email
+  console.log(req.body);
   Brand.findOne({
     where: {
       name: req.body.name,
@@ -129,7 +174,6 @@ checkDuplicatePlotWithTownship = (req, res, next) => {
   });
 };
 
-
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, './excel/')
@@ -171,10 +215,12 @@ const commonServices = {
   checkDuplicateTownship: checkDuplicateTownship,
   checkDuplicateProduct:checkDuplicateProduct,
   checkDuplicateBrand:checkDuplicateBrand,
+  checkDuplicateCategory:checkDuplicateCategory,
   checkDuplicatePlotWithTownship : checkDuplicatePlotWithTownship,
   plotVerify : plotVerify,
   upload:upload,
   singleFileUpload:singleFileUpload,
-  trimmer:trimmer
+  trimmer:trimmer,
+  checkDuplisubcateCategory:checkDuplisubcateCategory
 };
 module.exports = commonServices; 

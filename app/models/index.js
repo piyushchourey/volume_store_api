@@ -35,6 +35,8 @@ db.state = require("./state.model.js")(sequelize, Sequelize);
 db.city = require("./city.model.js")(sequelize, Sequelize);
 db.product = require("./product.model.js")(sequelize, Sequelize);
 db.brand = require("./brand.model.js")(sequelize, Sequelize);
+db.category = require("./category.model.js")(sequelize, Sequelize);
+db.subcategory = require("./subcategory.model.js")(sequelize, Sequelize);
 db.client = require("./client.model.js")(sequelize, Sequelize); 
 db.measurementunit = require("./units.model.js")(sequelize, Sequelize); 
 db.ratecalculations = require("./rateCalculations.js")(sequelize, Sequelize); 
@@ -45,6 +47,9 @@ db.ratecalculations = require("./rateCalculations.js")(sequelize, Sequelize);
 
 // Define the association
 db.product.belongsTo(db.brand, { foreignKey: 'brandId' });
+db.product.belongsTo(db.category, { foreignKey: 'categoryId' });
+db.product.belongsTo(db.subcategory, { foreignKey: 'subcategoryId' });
+db.subcategory.belongsTo(db.category, { foreignKey: 'categoryId' });
 
 // db.product.belongsTo(db.brand,{
 //   foreignKey : 'brandId',

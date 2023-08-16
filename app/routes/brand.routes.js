@@ -9,6 +9,8 @@ router.get("/getAll", [ authJwt.verifyToken ], brand.getAll);
 
 router.get("/getAllUnits", [ authJwt.verifyToken ], brand.getAllUnits);
 
+router.get("/getAllModelNumber", [ authJwt.verifyToken ], brand.getAllModelNumber);
+
 router.post("/import",[ authJwt.verifyToken ], brand.bulkImport);
 
 router.delete("/remove/:id",[ authJwt.verifyToken ], brand.doRemove);

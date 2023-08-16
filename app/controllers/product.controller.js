@@ -1,6 +1,8 @@
 const db = require("../models/index");
 const Product = db.product;
 const Brand = db.brand;
+const Category = db.category;
+const Subcategory = db.subcategory;
 const Op = db.Sequelize.Op;
 var _ = require('lodash');
 const fs = require('fs');
@@ -53,8 +55,10 @@ const create = async (req, res,next) => {
 			var productPostData = req.body;
 			var ImageFileName = await uploadImage(req.body,next);
 			var PdfFileName = await uploadPdf(req.body,next);
+			var BannerImageName = await uploadBannerImage(req.body,next);
 			productPostData['documents']= ImageFileName; 
 			productPostData['pdfFile']= PdfFileName; 
+			productPostData['bannerImg']= BannerImageName;
 			Product.create(productPostData).then(township => {
                 res.send({ status:1, data:[], message: "Product was added successfully!" });
 			}).catch(err => {
@@ -94,6 +98,31 @@ const uploadImage = async (req, next) => {
 	}
 }
 
+const uploadBannerImage = async (req, next) => {
+	// to declare some path to store your converted image
+	var matches = req.bannerImg.match(/^data:([A-Za-z-+/]+);base64,(.+)$/),
+	response = {};
+	 
+	if (matches.length !== 3) {
+	return new Error('Invalid input string');
+	}
+	 
+	response.type = matches[1];
+	response.data = new Buffer(matches[2], 'base64');
+	let decodedImg = response;
+	let imageBuffer = decodedImg.data;
+	let type = decodedImg.type;
+	let extension = mime.getExtension(type); 
+	let randomName = new Date().getTime();
+	let fileName = randomName +"." + extension;
+	try {
+		fs.writeFileSync("./images/product-banner/" + fileName, imageBuffer, 'utf8');
+		return fileName;
+	} catch (e) {
+		throw(e); 
+	}
+}
+
 const uploadPdf = async (req, next) => {
 	// to declare some path to store your converted image
 	var matches = req.pdfFile.match(/^data:([A-Za-z-+/]+);base64,(.+)$/),
@@ -121,24 +150,38 @@ const uploadPdf = async (req, next) => {
 
 const getAll = async (req, res, next) => {
 	try {
-	  const paramObj = req.params.id ? { where: { id: req.params.id } } : {};
-	  const productData = await Product.findAll({
-		...paramObj,
-		include: Brand, // Include associated Brand data
-	  });
+	  const paramObj = req.params.id ? { where: { id: req.params.id } } : {where: { status: 1 }};
+	  paramObj.include= [
+		{
+			model:Brand,
+			attributes: [ 'id', 'name', 'status' ],
+			where: { status: 1, }
+		},
+		{
+		  model: Category,
+		  attributes: [ 'id', 'name', 'status' ],
+		  where: { status: 1, },
+		},
+		{
+			model: Subcategory,
+			attributes: [ 'id', 'name', 'status' ],
+			where: { status: 1, },
+		}
+	  ]
+	  const productData = await Product.findAll(paramObj);
 	  const updatedProductData = productData.map((product) => {
 		product.documents = process.env.API_URL + 'images/' + product.documents;
+		product.bannerImg = process.env.API_URL + 'images/product-banner/' + product.bannerImg;
+		product.pdfFile = process.env.API_URL + 'pdf/' + product.pdfFile;
 		product.modelNumber = product.brand.name+ " - "+product.modelNumber;
 		return product;
-	  });
-
-	  console.log(updatedProductData); 
+	  }); 
   
 	  res.status(200).send({ status: true, data: updatedProductData, message: '' });
 	} catch (err) {
 	  res.status(500).send({ status: false, data: [], message: err.message });
 	}
-  };
+};
   
 
 const bulkImport = async ( req, res ) =>{
@@ -205,7 +248,6 @@ const doRemove = async ( req, res ) =>{
 		  });
 	}
 };
-
 
 module.exports = {
     create,

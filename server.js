@@ -35,7 +35,7 @@ app.get("/", (req, res) => {
 
 app.use('/api/login', require("./app/routes/login.routes"));
 app.use('/api/admin', require("./app/routes/register.routes"));
-// app.use('/api/category', require("./app/routes/category.routes"));
+
 // app.use('/api/township', require("./app/routes/townships.routes"));
 // app.use('/api/plot', require("./app/routes/plots.routes"));
 // app.use('/api/block', require("./app/routes/blocks.routes"));
@@ -45,10 +45,13 @@ app.use('/api/admin', require("./app/routes/register.routes"));
 
 app.use('/api/product', require("./app/routes/product.route")); 
 app.use('/api/brand', require("./app/routes/brand.routes"));
+app.use('/api/category', require("./app/routes/category.routes"));
+app.use('/api/subcategory', require("./app/routes/subcategory.routes"));
 app.use('/api/client', require("./app/routes/client.route"));
 app.use('/api/ratecalculation', require("./app/routes/rateCalculations.route"));
 
 app.use("/images", express.static(path.join(__dirname, 'images')));
+app.use("/pdf", express.static(path.join(__dirname, 'pdf')));
 app.use("/excel", express.static(path.join(__dirname, 'excel')));
 
 // set port, listen for requests

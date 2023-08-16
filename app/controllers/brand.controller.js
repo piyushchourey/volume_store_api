@@ -1,6 +1,7 @@
 const db = require("../models/index");
 const Brand = db.brand;
 const MeasurementUnit = db.measurementunit;
+const Product = db.product;
 const Op = db.Sequelize.Op;
 var _ = require('lodash');
 const fs = require('fs');
@@ -92,8 +93,7 @@ const uploadImage = async (req, res, next) => {
 const getAll =async (req, res, next) => {
     let paramObj = { status: true};
 	try {
-		let brandData = await Brand.findAll({where: paramObj})
-		console.log(brandData);
+		let brandData = await Brand.findAll({where: paramObj});
 		res.status(200).send({ status:true, data:brandData, message: '' });
 	  
 	}catch(err){
@@ -103,9 +103,20 @@ const getAll =async (req, res, next) => {
 
 const getAllUnits = async(req, res, next) => {
 	try {
-		let measurementUnitData = await MeasurementUnit.findAll()
-		console.log(measurementUnitData);
+		let measurementUnitData = await MeasurementUnit.findAll();
 		res.status(200).send({ status:true, data:measurementUnitData, message: '' });
+	  
+	}catch(err){
+		res.status(500).send({ status :0, data :[], message: err.message });
+	}
+}
+
+getAllModelNumber = async(req, res, next) => {
+	try {
+		let modelData = await Product.findAll({
+			attributes: ['modelNumber'],
+		});
+		res.status(200).send({ status:true, data:modelData, message: '' });
 	  
 	}catch(err){
 		res.status(500).send({ status :0, data :[], message: err.message });
@@ -183,5 +194,6 @@ module.exports = {
     getAll,
     bulkImport,
     doRemove,
-	getAllUnits
+	getAllUnits,
+	getAllModelNumber
 };
