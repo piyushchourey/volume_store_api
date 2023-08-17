@@ -40,20 +40,25 @@ const getAll =async (req, res, next) => {
 
 const doRemove = ( req, res ) =>{ 
 	const id = req.params.id;
-    let updateData = { status: false };
-	Category.update(updateData,{
-        where : { id : id } 
-    }).then(data => {
-		res.send({ status:1, data:[], message:"Category deleted successfully."});
-	  })
-	  .catch(err => {
-		res.status(500).send({
-		  status :0,
-		  data : [],
-		  message:
-			err.message || "Some error occurred while retrieving tutorials."
+	try{
+		Category.destroy({ where: { id: id } })
+		.then(data => { res.send({ status:1, data:[], message:"Category deleted successfully."}); })
+		.catch(err => {
+			if(err.message.includes("constraint fails")){
+				res.status(200).send({ status :0, message: 'Cannot delete parent category with associated subcategories' });
+			}else{
+				res.status(500).send({
+					status :0,
+					data : [],
+					message:
+						err.message || "Some error occurred while retrieving tutorials."
+				});
+			}
 		});
-	  });
+	}catch(err){
+		res.status(500).send({ status :0, data :[], message: err.message });
+	}
+	
 };
 
 

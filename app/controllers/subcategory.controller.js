@@ -61,20 +61,21 @@ const getAll =async (req, res, next) => {
 
 const doRemove = ( req, res ) =>{ 
 	const id = req.params.id;
-    let updateData = { status: false };
-	SubCategory.update(updateData,{
-        where : { id : id } 
-    }).then(data => {
-		res.send({ status:1, data:[], message:"Category deleted successfully."});
-	  })
-	  .catch(err => {
-		res.status(500).send({
-		  status :0,
-		  data : [],
-		  message:
-			err.message || "Some error occurred while retrieving tutorials."
+	try{
+		SubCategory.destroy({ where: { id: id } }).then(data => {
+			res.send({ status:1, data:[], message:"Category deleted successfully."});
+		}).catch(err => {
+			console.log(err)
+			res.status(500).send({
+			  status :0,
+			  data : [],
+			  message:
+				err.message || "Some error occurred while retrieving tutorials."
+			});
 		});
-	  });
+	}catch(err){
+		res.status(500).send({ status :0, data :[], message: err.message });
+	}
 };
 
 
