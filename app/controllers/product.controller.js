@@ -53,17 +53,45 @@ const create = async (req, res,next) => {
 	try{
 		if(!(_.isEmpty(req.body))){
 			var productPostData = req.body;
-			var ImageFileName = await uploadImage(req.body,next);
-			var PdfFileName = await uploadPdf(req.body,next);
-			var BannerImageName = await uploadBannerImage(req.body,next);
-			productPostData['documents']= ImageFileName; 
-			productPostData['pdfFile']= PdfFileName; 
-			productPostData['bannerImg']= BannerImageName;
-			Product.create(productPostData).then(township => {
-                res.send({ status:1, data:[], message: "Product was added successfully!" });
-			}).catch(err => {
-                res.status(500).send({ status:0, data:[], message: err.message });
-			});
+			if(req.body.documents!=""){
+				var ImageFileName = await uploadImage(req.body,next);
+				productPostData['documents']= ImageFileName;
+			}
+			if(req.body.pdfFile!=""){
+				var PdfFileName = await uploadPdf(req.body,next);
+				productPostData['pdfFile']= PdfFileName;
+			}
+			if(req.body.bannerImg!=""){
+				var BannerImageName = await uploadBannerImage(req.body,next);
+				productPostData['bannerImg']= BannerImageName;
+			}
+			if(productPostData.productId && productPostData.productId > 0){
+				console.log("update...........");
+				//Update block...
+				let UpdateproductPostDataOfID = _.pick(productPostData, ['productId']);
+				let UpdateproductPostData = productPostData;
+				UpdateproductPostData = _.omit(UpdateproductPostData, ['productId','modelNumber']);
+				console.log(UpdateproductPostData);
+				UpdateproductPostData = Object.fromEntries(
+					Object.entries(UpdateproductPostData).filter(([key, value]) => value !== null && value !== '')
+				);
+				console.log("UpdateproductPostData",UpdateproductPostData)
+				await Product.update(UpdateproductPostData,{
+					where : { id : UpdateproductPostDataOfID.productId } 
+				}).then(data => {
+						res.send({ status:1, data:data, message: 'Product updated successfully.' });
+				}).catch(err => { 
+					res.status(500).send({ status :0, data :[], message: err.message || "Some error occurred while retrieving tutorials." }); 
+				});
+			}else{
+				//Create block...	
+				delete productPostData['productId'];
+				Product.create(productPostData).then(product => {
+					res.send({ status:1, data:[], message: "Product was added successfully!" });
+				}).catch(err => {
+					res.status(500).send({ status:0, data:[], message: err.message });
+				});
+			}
 		}else{
 			res.send({ status:0, data:[], message: 'Post data is not valid.' });
 		}
@@ -234,7 +262,7 @@ const doRemove = async ( req, res ) =>{
 		const id = req.params.id;
 		const product = await Product.findOne({ where: { id: id } });
 		if(product){
-			await Product.update({ status: false }, { where: { id: id } });
+			await Product.destroy( { where: { id: id } });
 			res.send({ status:true, data:[], message:"Product deleted successfully."});
 		}else{
 			res.status(500).send({status :false,message:"Product does not exist in our DB."});
