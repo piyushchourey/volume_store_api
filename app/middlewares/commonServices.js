@@ -1,6 +1,7 @@
 const db = require("../models");
 const Townships = db.townships;
 const Brand = db.brand;
+const Service = db.service;
 const Category = db.category;
 const SubCategory = db.subcategory;
 const Product = db.product;
@@ -74,7 +75,6 @@ checkDuplisubcateCategory = (req, res, next) => {
 };
 
 checkDuplicateBrand = (req, res, next) => {
-  console.log(req.body);
   Brand.findOne({
     where: {
       name: req.body.name,
@@ -85,6 +85,26 @@ checkDuplicateBrand = (req, res, next) => {
         status :0,
         data:[],
         message: "Failed! Brand name is already exist."
+      });
+      return;
+    }else{
+      next();
+    }
+  });
+};
+
+checkDuplicateService = (req, res, next) => {
+  console.log("req.body.name",req.body.name);
+  Service.findOne({
+    where: {
+      name: req.body.name,
+    }
+  }).then(service => {
+    if (service) {
+      res.status(201).send({
+        status :0,
+        data:[],
+        message: "Failed! Service name is already exist."
       });
       return;
     }else{
@@ -120,7 +140,6 @@ plotVerify = (req, res, next) =>{
         plot_number :req.body.plotNumber
       }
     }).then(plot => {
-      console.log("sadsad"+ plot)
       if(_.size(plot)){
         if(plot.status > 0){
           res.status(400).send({
@@ -184,7 +203,6 @@ var storage = multer.diskStorage({
 })
 
 const fileFilter=(req, file, cb)=>{
-  console.log("sdsads");
  if(file.mimetype ==='csv' || file.mimetype ==='xls'){
      cb(null,true);
  }else{
@@ -205,7 +223,6 @@ const singleFileUpload = upload.single("importFiles")
 
 var trimmer = function(req, res, next){
   req.body = _.object(_.map(req.body, function (value, key) {
-    console.log(value);
     return [key, value.trim()];
   }));
   next();
@@ -215,6 +232,7 @@ const commonServices = {
   checkDuplicateTownship: checkDuplicateTownship,
   checkDuplicateProduct:checkDuplicateProduct,
   checkDuplicateBrand:checkDuplicateBrand,
+  checkDuplicateService:checkDuplicateService,
   checkDuplicateCategory:checkDuplicateCategory,
   checkDuplicatePlotWithTownship : checkDuplicatePlotWithTownship,
   plotVerify : plotVerify,

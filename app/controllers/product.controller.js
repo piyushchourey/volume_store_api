@@ -18,7 +18,6 @@ var storage = multer.diskStorage({
 	  cb(null, './excel/')
 	},
 	filename: function (req, file, cb) {
-		console.log('filenmeaff')
 		let filenqme =  Date.now()+file.originalname
 		req['filename2'] = filenqme
 	  cb(null, filenqme)
@@ -35,7 +34,6 @@ var upload = multer({
   });
   
   const fileFilter=(req, file, cb)=>{
-	console.log("sdsads");
 //    if(file.mimetype ==='csv' || file.mimetype ==='xls'){
 // 	   cb(null,true);
 //    }else{
@@ -65,17 +63,17 @@ const create = async (req, res,next) => {
 				var BannerImageName = await uploadBannerImage(req.body,next);
 				productPostData['bannerImg']= BannerImageName;
 			}
+			
 			if(productPostData.productId && productPostData.productId > 0){
-				console.log("update...........");
 				//Update block...
 				let UpdateproductPostDataOfID = _.pick(productPostData, ['productId']);
 				let UpdateproductPostData = productPostData;
 				UpdateproductPostData = _.omit(UpdateproductPostData, ['productId','modelNumber']);
-				console.log(UpdateproductPostData);
+			
 				UpdateproductPostData = Object.fromEntries(
 					Object.entries(UpdateproductPostData).filter(([key, value]) => value !== null && value !== '')
 				);
-				console.log("UpdateproductPostData",UpdateproductPostData)
+				
 				await Product.update(UpdateproductPostData,{
 					where : { id : UpdateproductPostDataOfID.productId } 
 				}).then(data => {
@@ -202,6 +200,11 @@ const getAll = async (req, res, next) => {
 		product.bannerImg = process.env.API_URL + 'images/product-banner/' + product.bannerImg;
 		product.pdfFile = process.env.API_URL + 'pdf/' + product.pdfFile;
 		product.modelNumber = product.brand.name+ " - "+product.modelNumber;
+		if(product.videoURL){
+			product.videoURL = convertToEmbedUrl(product.videoURL);
+		}else{
+			product.videoURL = "";
+		}
 		return product;
 	  }); 
   
@@ -210,14 +213,10 @@ const getAll = async (req, res, next) => {
 	  res.status(500).send({ status: false, data: [], message: err.message });
 	}
 };
-  
 
 const bulkImport = async ( req, res ) =>{
 	try{
-		console.log(req.files); 
-		console.log(__dirname)
 		let data = await new Promise((resolve, reject) => {
-			console.log('runnn')
 			return singleFileUpload(req, res, err => {
 				console.log(err) 
 				// console.log(res)
@@ -248,7 +247,6 @@ const bulkImport = async ( req, res ) =>{
 					description: row['Description'],
                     itemRemark:row['Item Remark']
 				}))
-                console.log(products)
 				await Product.bulkCreate(products); 
 				res.send({ status:true, data:[], message: "Products was added successfully!" });
 			}
@@ -274,6 +272,34 @@ const doRemove = async ( req, res ) =>{
 			message:
 			  err.message || "Some error occurred while retrieving tutorials."
 		  });
+	}
+};
+
+function convertToEmbedUrl(videoURLMeta) {
+	var videoURLMetaURL = extractVideoURL(videoURLMeta);
+	// Extract the video ID from the URL
+	const videoId = videoURLMetaURL.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v\/|.*\/videos\/|.*[?&]v=|.*[?&]vi=))([^"&?\/\s]{11})/);
+  
+	if (videoId) {
+	  // Build the embeddable URL
+	  const embedUrl = `https://www.youtube.com/embed/${videoId[1]}`;
+	  return embedUrl;
+	} else {
+	  console.error('Invalid YouTube video URL');
+	  return null;
+	}
+};
+  
+function extractVideoURL(videoURLMeta) {
+	// Regular expression to match the YouTube video URL
+	const regex = /<oembed\s*url\s*=\s*"(https:\/\/youtu\.be\/[^"]+)"\s*><\/oembed>/;
+	const match = videoURLMeta.toString().match(regex);
+  
+	if (match && match[1]) {
+	  var youtubeUrl = match[1];
+	  return youtubeUrl;
+	} else {
+	  return null;
 	}
 };
 

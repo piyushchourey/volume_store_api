@@ -1,5 +1,5 @@
 const db = require("../models/index");
-const Brand = db.brand;
+const Service = db.service;
 const MeasurementUnit = db.measurementunit;
 const Product = db.product;
 const Op = db.Sequelize.Op;
@@ -50,9 +50,9 @@ const create = async (req, res) => {
     // Validate request
 	try{
 		if(!(_.isEmpty(req.body))){
-			var brandPostData = req.body;
-			Brand.create(brandPostData).then(brand => {
-                res.send({ status:1, data:[], message: "Brand was added successfully!" });
+			var servicePostData = req.body;
+			Service.create(servicePostData).then(service => {
+                res.send({ status:1, data:[], message: "Service was added successfully!" });
 			}).catch(err => {
                 res.status(500).send({ status:0, data:[], message: err.message });
 			});
@@ -93,21 +93,18 @@ const uploadImage = async (req, res, next) => {
 const getAll =async (req, res, next) => {
     let paramObj = { status: true};
 	try {
-		const brandData = await Brand.findAll({
+		const serviceData = await Service.findAll({
 			where: paramObj,
 			attributes: [
-			  [Sequelize.literal('UPPER(brand.name)'), 'name'], // Convert brandName to uppercase
+			  [Sequelize.literal('UPPER(service.name)'), 'name'], // Convert brandName to uppercase
 			  'id',
 			  'status',
 			  'createdAt',
 			  'updatedAt',
 			],
-			order: [[Sequelize.literal('UPPER(brand.name)'), 'ASC']] // Order by name in ascending order
+			order: [[Sequelize.literal('UPPER(service.name)'), 'ASC']] // Order by name in ascending order
 		  });
-		// Convert the 'name' property of each object to uppercase in brandData
-		//brandData = brandData.map(item => ({ ...item, name: item.name.toUpperCase() }));
-		//console.log(brandData);
-		res.status(200).send({ status:true, data:brandData, message: '' });
+		res.status(200).send({ status:true, data:serviceData, message: '' });
 	}catch(err){
 		res.status(500).send({ status :0, data :[], message: err.message });
 	}
@@ -124,22 +121,9 @@ const getAllUnits = async(req, res, next) => {
 }
 
 getAllModelNumber = async(req, res, next) => {
-	const andConditions = [];
-	const paramObj = {};
-	if(req.params.id){
-		let id = req.params.id; 
-		var brandIdCondition = id ? { brandId: { [Op.eq]: id } } : null;
-		andConditions.push(brandIdCondition);
-	}
-	var statusCondition =  { status: { [Op.eq]: 1 } };
-	andConditions.push(statusCondition);
-	if(_.size(andConditions) > 0){
-		paramObj.where = { [Op.and]: andConditions };
-	}
 	try {
 		let modelData = await Product.findAll({
 			attributes: ['modelNumber'],
-			...paramObj // spread the properties of paramObj here
 		});
 		res.status(200).send({ status:true, data:modelData, message: '' });
 	  
@@ -196,11 +180,10 @@ const bulkImport = async ( req, res ) =>{
 const doRemove = ( req, res ) =>{ 
 	const id = req.params.id;
     let updateData = { status: false };
-    console.log(updateData, id);
-	Brand.update(updateData,{
+	Service.update(updateData,{
         where : { id : id } 
     }).then(data => {
-		res.send({ status:1, data:[], message:"Brand deleted successfully."});
+		res.send({ status:1, data:[], message:"Service deleted successfully."});
 	  })
 	  .catch(err => {
 		res.status(500).send({
@@ -215,10 +198,10 @@ const doRemove = ( req, res ) =>{
 
 module.exports = {
     create,
-    uploadImage,
+    // uploadImage,
     getAll,
-    bulkImport,
+    // bulkImport,
     doRemove,
-	getAllUnits,
-	getAllModelNumber
+	// getAllUnits,
+	// getAllModelNumber
 };

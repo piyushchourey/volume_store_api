@@ -45,12 +45,14 @@ app.use('/api/admin', require("./app/routes/register.routes"));
 
 app.use('/api/product', require("./app/routes/product.route")); 
 app.use('/api/brand', require("./app/routes/brand.routes"));
+app.use('/api/service', require("./app/routes/service.routes"));
 app.use('/api/category', require("./app/routes/category.routes"));
 app.use('/api/subcategory', require("./app/routes/subcategory.routes"));
 app.use('/api/client', require("./app/routes/client.route"));
 app.use('/api/ratecalculation', require("./app/routes/rateCalculations.route"));
 
 app.use("/images", express.static(path.join(__dirname, 'images')));
+app.use("/images/product-banner", express.static(path.join(__dirname, 'images/product-banner')));
 app.use("/pdf", express.static(path.join(__dirname, 'pdf')));
 app.use("/excel", express.static(path.join(__dirname, 'excel')));
 

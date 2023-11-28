@@ -53,6 +53,9 @@ module.exports = (sequelize, Sequelize) => {
       OEMcriteria:{
         type: DataTypes.TEXT
       },
+      videoURL:{
+        type: DataTypes.TEXT
+      },
       documents: {
         type: DataTypes.TEXT
       },

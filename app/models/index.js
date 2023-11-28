@@ -35,6 +35,7 @@ db.state = require("./state.model.js")(sequelize, Sequelize);
 db.city = require("./city.model.js")(sequelize, Sequelize);
 db.product = require("./product.model.js")(sequelize, Sequelize);
 db.brand = require("./brand.model.js")(sequelize, Sequelize);
+db.service = require("./service.model.js")(sequelize, Sequelize);
 db.category = require("./category.model.js")(sequelize, Sequelize);
 db.subcategory = require("./subcategory.model.js")(sequelize, Sequelize);
 db.client = require("./client.model.js")(sequelize, Sequelize); 
