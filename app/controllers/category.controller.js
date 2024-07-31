@@ -4,16 +4,30 @@ const Op = db.Sequelize.Op;
 var _ = require('lodash');
 
 // Create and Save a new Category
-const create = (req, res) => {
+const create = async(req, res) => {
     // Validate request
 	try{
 		if(!(_.isEmpty(req.body))){
 			var categoryPostData = req.body;
-			Category.create(categoryPostData).then(brand => {
-                res.send({ status:1, data:[], message: "Category was added successfully!" });
-			}).catch(err => {
-                res.status(500).send({ status:0, data:[], message: err.message });
-			});
+			if(categoryPostData.id){
+				let brandId = _.pick(categoryPostData, ['id']);
+				let UpdatecategoryPostData = categoryPostData;
+				UpdatecategoryPostData = _.omit(UpdatecategoryPostData, ['id']);
+				await Category.update(UpdatecategoryPostData,{
+					where : { id : brandId.id } 
+				}).then(data => {
+						res.send({ status:1, data:data, message: 'Category updated successfully.' });
+				}).catch(err => { 
+					res.status(500).send({ status :0, data :[], message: err.message || "Some error occurred while retrieving tutorials." }); 
+				});
+			}else{
+				delete categoryPostData['id'];
+				Category.create(categoryPostData).then(brand => {
+					res.send({ status:1, data:[], message: "Category was added successfully!" });
+				}).catch(err => {
+					res.status(500).send({ status:0, data:[], message: err.message });
+				});
+			}
 		}else{
 			res.send({ status:0, data:[], message: 'Post data is not valid.' });
 		}

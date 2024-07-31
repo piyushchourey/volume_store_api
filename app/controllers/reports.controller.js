@@ -104,15 +104,6 @@ const getPieChartData = async (req,res) =>{
 		whereObjStr = " where `townshipId` = "+townshipId;
 	}
 	try{
-		/** Total Plots **/
-		// let plotsData = await Plots.findAll({
-		// 	whereObj,
-		// 	attributes:[
-		// 		[ Sequelize.fn('Count', Sequelize.col('id')), 'count'],
-		// 		'plot_status'
-		// 	],
-		// 	group : ['plot_status']
-		// });
 		query ="SELECT COUNT(`id`) as count, `plot_status` FROM `plots`"+whereObjStr+" group by `plot_status`";
 		resultData = await sequelize.query(query, { type: Sequelize.SELECT });
 		plotsData = JSON.parse(JSON.stringify(resultData[0]))

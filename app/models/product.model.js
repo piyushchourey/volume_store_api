@@ -2,6 +2,9 @@ const { Sequelize, DataTypes } = require('sequelize');
 
 module.exports = (sequelize, Sequelize) => {
     const Products = sequelize.define("products", {
+      serviceId: {
+        type: DataTypes.INTEGER
+      },
       brandId: {
         type: DataTypes.INTEGER
       },
@@ -12,6 +15,12 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.INTEGER
       },
       modelNumber:{
+        type: DataTypes.STRING
+      },
+      quotationDescription:{
+        type: DataTypes.TEXT
+      },
+      projectPrice:{
         type: DataTypes.STRING
       },
       mrpPrice:{

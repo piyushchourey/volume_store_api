@@ -3,6 +3,9 @@ module.exports = (sequelize, Sequelize) => {
       name: {
         type: Sequelize.STRING
       },
+      description: {
+        type: Sequelize.TEXT
+      },
       status: {
         type: Sequelize.BOOLEAN,
         defaultValue:true

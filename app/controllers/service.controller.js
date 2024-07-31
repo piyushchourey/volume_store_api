@@ -51,11 +51,25 @@ const create = async (req, res) => {
 	try{
 		if(!(_.isEmpty(req.body))){
 			var servicePostData = req.body;
-			Service.create(servicePostData).then(service => {
-                res.send({ status:1, data:[], message: "Service was added successfully!" });
-			}).catch(err => {
-                res.status(500).send({ status:0, data:[], message: err.message });
-			});
+			if(servicePostData.id){
+				let serviceId = _.pick(servicePostData, ['id']);
+				let UpdateservicePostData = servicePostData;
+				UpdateproductPostData = _.omit(UpdateservicePostData, ['id']);
+				await Service.update(UpdateproductPostData,{
+					where : { id : serviceId.id } 
+				}).then(data => {
+						res.send({ status:1, data:data, message: 'Service updated successfully.' });
+				}).catch(err => { 
+					res.status(500).send({ status :0, data :[], message: err.message || "Some error occurred while retrieving tutorials." }); 
+				});
+			}else{
+				delete servicePostData['id'];
+				Service.create(servicePostData).then(service => {
+					res.send({ status:1, data:[], message: "Service was added successfully!" });
+				}).catch(err => {
+					res.status(500).send({ status:0, data:[], message: err.message });
+				});
+			}
 		}else{
 			res.send({ status:0, data:[], message: 'Post data is not valid.' });
 		}
@@ -96,8 +110,9 @@ const getAll =async (req, res, next) => {
 		const serviceData = await Service.findAll({
 			where: paramObj,
 			attributes: [
-			  [Sequelize.literal('UPPER(service.name)'), 'name'], // Convert brandName to uppercase
+			  [Sequelize.literal('UPPER(service.name)'), 'name'], // Convert sevice to uppercase
 			  'id',
+			  'description',
 			  'status',
 			  'createdAt',
 			  'updatedAt',

@@ -13,4 +13,6 @@ router.post("/import",[ authJwt.verifyToken ], product.bulkImport);
 
 router.delete("/remove/:id",[ authJwt.verifyToken ], product.doRemove);
 
+router.post("/fetchDetails", [ authJwt.verifyToken ], product.fetchDetails);
+
 module.exports = router;

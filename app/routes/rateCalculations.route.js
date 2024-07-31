@@ -9,4 +9,6 @@ router.post("/excelExport", [ authJwt.verifyToken ], ratecalculation.genrateExce
 
 router.get("/xls", ratecalculation.genrateExcel);
 
+router.post("/updateEstimateCost", [ authJwt.verifyToken ], ratecalculation.updateEstimateCost);
+
 module.exports = router;

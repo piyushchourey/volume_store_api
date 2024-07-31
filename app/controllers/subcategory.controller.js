@@ -5,17 +5,30 @@ const Op = db.Sequelize.Op;
 var _ = require('lodash');
 
 // Create and Save a new Sub category
-const create = (req, res) => {
+const create = async(req, res) => {
     // Validate request
 	try{
 		if(!(_.isEmpty(req.body))){
 			var subcategoryPostData = req.body;
-            subcategoryPostData['status'] = 1;
-			SubCategory.create(subcategoryPostData).then(subcategory => {
-                res.send({ status:1, data:[], message: "Sub Category was added successfully!" });
-			}).catch(err => {
-                res.status(500).send({ status:0, data:[], message: err.message });
-			});
+			if(subcategoryPostData.id){
+				let subcategoryId = _.pick(subcategoryPostData, ['id']);
+				let UpdatesubcategoryPostData = subcategoryPostData;
+				UpdatesubcategoryPostData = _.omit(UpdatesubcategoryPostData, ['id']);
+				await SubCategory.update(UpdatesubcategoryPostData,{
+					where : { id : subcategoryId.id } 
+				}).then(data => {
+						res.send({ status:1, data:data, message: 'SubCategory updated successfully.' });
+				}).catch(err => { 
+					res.status(500).send({ status :0, data :[], message: err.message || "Some error occurred while retrieving tutorials." }); 
+				});
+			}else{
+				delete subcategoryPostData['id']; subcategoryPostData['status'] = 1;
+				SubCategory.create(subcategoryPostData).then(brand => {
+					res.send({ status:1, data:[], message: "SubCategory was added successfully!" });
+				}).catch(err => {
+					res.status(500).send({ status:0, data:[], message: err.message });
+				});
+			}
 		}else{
 			res.send({ status:0, data:[], message: 'Post data is not valid.' });
 		}

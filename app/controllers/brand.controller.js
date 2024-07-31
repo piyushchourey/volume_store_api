@@ -51,11 +51,25 @@ const create = async (req, res) => {
 	try{
 		if(!(_.isEmpty(req.body))){
 			var brandPostData = req.body;
-			Brand.create(brandPostData).then(brand => {
-                res.send({ status:1, data:[], message: "Brand was added successfully!" });
-			}).catch(err => {
-                res.status(500).send({ status:0, data:[], message: err.message });
-			});
+			if(brandPostData.id){
+				let brandId = _.pick(brandPostData, ['id']);
+				let UpdatebrandPostData = brandPostData;
+				UpdatebrandPostData = _.omit(UpdatebrandPostData, ['id']);
+				await Brand.update(UpdatebrandPostData,{
+					where : { id : brandId.id } 
+				}).then(data => {
+						res.send({ status:1, data:data, message: 'Brand updated successfully.' });
+				}).catch(err => { 
+					res.status(500).send({ status :0, data :[], message: err.message || "Some error occurred while retrieving tutorials." }); 
+				});
+			}else{
+				delete brandPostData['id'];
+				Brand.create(brandPostData).then(brand => {
+					res.send({ status:1, data:[], message: "Brand was added successfully!" });
+				}).catch(err => {
+					res.status(500).send({ status:0, data:[], message: err.message });
+				});
+			}
 		}else{
 			res.send({ status:0, data:[], message: 'Post data is not valid.' });
 		}
@@ -138,7 +152,7 @@ getAllModelNumber = async(req, res, next) => {
 	}
 	try {
 		let modelData = await Product.findAll({
-			attributes: ['modelNumber'],
+			attributes: ['modelNumber','id'],
 			...paramObj // spread the properties of paramObj here
 		});
 		res.status(200).send({ status:true, data:modelData, message: '' });

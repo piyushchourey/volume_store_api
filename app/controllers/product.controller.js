@@ -1,5 +1,6 @@
 const db = require("../models/index");
 const Product = db.product;
+const Service = db.service;
 const Brand = db.brand;
 const Category = db.category;
 const Subcategory = db.subcategory;
@@ -10,7 +11,6 @@ const mime = require('mime');
 const XLSX = require("xlsx"); 
 const {  commonServices } = require("../middlewares");
 var multer  = require('multer');
-
 
 var storage = multer.diskStorage({
 	destination: function (req, file, cb) {
@@ -179,19 +179,20 @@ const getAll = async (req, res, next) => {
 	  const paramObj = req.params.id ? { where: { id: req.params.id } } : {where: { status: 1 }};
 	  paramObj.include= [
 		{
+			model:Service,
+			attributes: [ 'id', 'name', 'status' ]
+		},
+		{
 			model:Brand,
-			attributes: [ 'id', 'name', 'status' ],
-			where: { status: 1, }
+			attributes: [ 'id', 'name', 'status' ]
 		},
 		{
 		  model: Category,
-		  attributes: [ 'id', 'name', 'status' ],
-		  where: { status: 1, },
+		  attributes: [ 'id', 'name', 'status' ]
 		},
 		{
 			model: Subcategory,
-			attributes: [ 'id', 'name', 'status' ],
-			where: { status: 1, },
+			attributes: [ 'id', 'name', 'status' ]
 		}
 	  ]
 	  const productData = await Product.findAll(paramObj);
@@ -200,11 +201,6 @@ const getAll = async (req, res, next) => {
 		product.bannerImg = process.env.API_URL + 'images/product-banner/' + product.bannerImg;
 		product.pdfFile = process.env.API_URL + 'pdf/' + product.pdfFile;
 		product.modelNumber = product.brand.name+ " - "+product.modelNumber;
-		if(product.videoURL){
-			product.videoURL = convertToEmbedUrl(product.videoURL);
-		}else{
-			product.videoURL = "";
-		}
 		return product;
 	  }); 
   
@@ -213,6 +209,36 @@ const getAll = async (req, res, next) => {
 	  res.status(500).send({ status: false, data: [], message: err.message });
 	}
 };
+
+const fetchDetails = async(req, res, next) => {
+	const andConditions = [];
+	const paramObj = {};
+	if(req.body.brandId){
+		let brandId = req.body.brandId; 
+		var brandIdCondition = brandId ? { brandId: { [Op.eq]: brandId } } : null;
+		andConditions.push(brandIdCondition);
+	}
+	if(req.body.modelNumber){
+		let modelNumber = req.body.modelNumber; 
+		var modelNumberCondition = modelNumber ? { modelNumber: { [Op.eq]: modelNumber } } : null;
+		andConditions.push(modelNumberCondition);
+	}
+	var statusCondition =  { status: { [Op.eq]: 1 } };
+	andConditions.push(statusCondition);
+	if(_.size(andConditions) > 0){
+		paramObj.where = { [Op.and]: andConditions };
+	}
+	paramObj.include = [Service];
+	try {
+		let productData = await Product.findAll({
+			...paramObj // spread the properties of paramObj here
+		});
+		res.status(200).send({ status:true, data:productData, message: '' });
+	  
+	}catch(err){
+		res.status(500).send({ status :0, data :[], message: err.message });
+	}
+}
 
 const bulkImport = async ( req, res ) =>{
 	try{
@@ -279,7 +305,7 @@ function convertToEmbedUrl(videoURLMeta) {
 	var videoURLMetaURL = extractVideoURL(videoURLMeta);
 	// Extract the video ID from the URL
 	const videoId = videoURLMetaURL.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v\/|.*\/videos\/|.*[?&]v=|.*[?&]vi=))([^"&?\/\s]{11})/);
-  
+	console.log("video id",videoId );
 	if (videoId) {
 	  // Build the embeddable URL
 	  const embedUrl = `https://www.youtube.com/embed/${videoId[1]}`;
@@ -292,10 +318,9 @@ function convertToEmbedUrl(videoURLMeta) {
   
 function extractVideoURL(videoURLMeta) {
 	// Regular expression to match the YouTube video URL
-	const regex = /<oembed\s*url\s*=\s*"(https:\/\/youtu\.be\/[^"]+)"\s*><\/oembed>/;
+	var regex = /<oembed\s+url="(https:\/\/www\.youtube\.com\/[^"]+)"><\/oembed>/;
 	const match = videoURLMeta.toString().match(regex);
-  
-	if (match && match[1]) {
+  	if (match && match[1]) {
 	  var youtubeUrl = match[1];
 	  return youtubeUrl;
 	} else {
@@ -308,5 +333,6 @@ module.exports = {
     uploadImage,
     getAll,
     bulkImport,
-	doRemove
+	doRemove,
+	fetchDetails
 };
