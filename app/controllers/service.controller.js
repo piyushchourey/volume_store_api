@@ -194,20 +194,15 @@ const bulkImport = async ( req, res ) =>{
 
 const doRemove = ( req, res ) =>{ 
 	const id = req.params.id;
-    let updateData = { status: false };
-	Service.update(updateData,{
-        where : { id : id } 
-    }).then(data => {
-		res.send({ status:1, data:[], message:"Service deleted successfully."});
-	  })
-	  .catch(err => {
-		res.status(500).send({
-		  status :0,
-		  data : [],
-		  message:
-			err.message || "Some error occurred while retrieving tutorials."
-		});
-	  });
+    try{
+        Service.destroy({ where: { id: id } }).then(data => {
+            res.send({ status:1, data:[], message:"Service deleted successfully."});
+          }).catch(err => {
+            res.status(500).send({ status :0, data : [], message: err.message || "Some error occurred while retrieving tutorials." });
+        });
+    }catch(err){
+        res.status(500).send({ status :0, data : [], message: err.message || "Some error occurred while retrieving tutorials." });
+    }
 };
 
 
